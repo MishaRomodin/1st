@@ -11,19 +11,19 @@
 #include <stdlib.h>
 
 
-int main(int argc, const char** argv, const char** envp)//(argv - имя файла)
+int main(int argc, const char** argv)//(argv - имя файла)
 {
-	DIR* dir;
-	struct dirent* curr_file_info;
+	DIR* dir;//создания данной типа DIR* (поток данных о месторасположении)
+	struct dirent* curr_file_info;//инфа о текущем файле
 	struct stat sb;
-	char* full_path = NULL;//создаем переменную(строковая и пустая) для пути к файлу
+	char* full_path = NULL;//создаем переменную (строковая и пустая) для пути к файлу
 	struct passwd  *pw_d;
 	if(argc < 2)//аргументов недостаточно, файл не найден
 	{
 		printf("No arguments supplied\n");
 		return -1;
 	}
-	dir = opendir(argv[1]);
+	dir = opendir(argv[1]);//открываем файл (поток данных о первом элементе argv) при ошибке он присваивает NULL
 	if(dir == NULL)
 	{
 		printf("Error - %d\n", errno);
@@ -33,11 +33,11 @@ int main(int argc, const char** argv, const char** envp)//(argv - имя фай�
 	while( ( curr_file_info = readdir(dir) ) != NULL )
 	{
 		printf("--------------------------------------------\n");
-		printf("File path:  %s/%s\n", full_path, curr_file_info->d_name);
-		full_path = realpath(argv[1], NULL);
+		printf("File path:  %s/%s\n", full_path, curr_file_info->d_name);//пишем путь к файлу
+		full_path = realpath(argv[1], NULL);//присваиваем истинный путь
                 char* tempp = full_path;
                 tempp = strcat(tempp, "/");
-                tempp = strcat(tempp, curr_file_info->d_name);
+                tempp = strcat(tempp, curr_file_info->d_name);//после полного путя нужно еще вписать имя
 		if (stat(tempp, &sb) == -1) {
         	printf("Statistics couldn't be taken.");
         	return -1;
