@@ -30,18 +30,19 @@ int main(int argc, const char** argv)//(argv - имя файла)
 		return -1;
 	}
 	full_path = realpath(argv[1], NULL);//команда выводит путь файла(argv)
-	while( ( curr_file_info = readdir(dir) ) != NULL )
+	while( ( curr_file_info = readdir(dir) ) != NULL )//читаем все из dira, пока не наступит конец
 	{
 		printf("--------------------------------------------\n");
-		printf("File path:  %s/%s\n", full_path, curr_file_info->d_name);//пишем путь к файлу
+		printf("File path:  %s/%s\n", full_path, curr_file_info->d_name);//пишем путь к файлу+имя, взятое из currfileinfo
 		full_path = realpath(argv[1], NULL);//присваиваем истинный путь
                 char* tempp = full_path;
                 tempp = strcat(tempp, "/");
-                tempp = strcat(tempp, curr_file_info->d_name);//после полного путя нужно еще вписать имя
-		if (stat(tempp, &sb) == -1) {
+                tempp = strcat(tempp, curr_file_info->d_name);//после полного путя нужно еще вписать имя(после слэша) в tempp, т.о. получим полный путь
+		if (stat(tempp, &sb) == -1) //снимаем статистику о файле (13 параметров)  и кладем в sb (при ошибке и в винде возвратит -1)
+		{
         	printf("Statistics couldn't be taken.");
         	return -1;
-    	}	
+    	        }	
     	printf("File size:                %lld bytes\n", (long long) sb.st_size);
     	pw_d = getpwuid ( sb.st_uid ); 
   		printf ( "File owner:               %s \n", pw_d->pw_name); 
