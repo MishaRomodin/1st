@@ -11,12 +11,12 @@
 #include <stdlib.h>
 
 
-int main(int argc, const char** argv, const char** envp)
+int main(int argc, const char** argv, const char** envp)//(argv - имя файла)
 {
 	DIR* dir;
 	struct dirent* curr_file_info;
 	struct stat sb;
-	char* full_path = NULL;//создаем переменную
+	char* full_path = NULL;//создаем переменную(строковая и пустая) для пути к файлу
 	struct passwd  *pw_d;
 	if(argc < 2)//аргументов недостаточно, файл не найден
 	{
@@ -29,7 +29,7 @@ int main(int argc, const char** argv, const char** envp)
 		printf("Error - %d\n", errno);
 		return -1;
 	}
-	full_path = realpath(argv[1], NULL);
+	full_path = realpath(argv[1], NULL);//команда выводит путь файла(argv)
 	while( ( curr_file_info = readdir(dir) ) != NULL )
 	{
 		printf("--------------------------------------------\n");
