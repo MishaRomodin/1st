@@ -1,111 +1,57 @@
+//узнать свойства файла
+#include <string.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
-#include <unistd.h>
+#include <time.h>
+#include <dirent.h>
 #include <errno.h>
-#include <fcntl.h>
-#include <string.h>
+#include <pwd.h>
+#include <limits.h>
 #include <stdlib.h>
 
-//Global constants.
-//"\n" symbol as End of Line.
-char NextLine = 10;
-//Calculus base for "strtol" function.
-int CalculusBase = 10;
-//Maximum string size.
-int MaxStringSize = 100;
 
-//No global variables.
-
-//Function that executes command stored in string.
-int useless(char *str){
-
-    //Variables.
-    //Variable that stores pause time.
-    int pause;
-    //Dynamic string to store commands.
-    char *command=malloc(MaxStringSize),*p;
-    //Child process PID.
-    pid_t pid;
-
-    //Detecting whether child process is created.
-    if((pid=fork())<0){
-	   printf("%s\n","Can't create child process.");
-	   exit(-1);
-    }
-    if (pid>0) return 0;
-
-    //This function converts string to long int. 10 is the count basis. End of long int string value stores into P.
-    pause=strtol(str,&p,CalculusBase);
-
-    //Pausing for PAUSE milliseconds. 
-    sleep(pause);
-
-    //Copying command string to COMMAND variable.
-    strcpy(command,p+1);
-    
-    //This part of code was redone.
-    int loop = strlen(command)-1;
-    while(command[loop] != '/'){
-        loop--;
-    }
-    char script_name[20];
-    strncpy(script_name, command, loop);
-    //-----------------------------
-    if(execl(command,script_name, NULL)<0){
-        printf("%s%s%s\n","Program ",command," failed to load.");
-        exit(0);
-    }
-
-    //To get rid of warning: "Control may reach the end of non-void function".
-    exit(-1);
-}
-
-
-//Function main.
-int main(){ 
-
-    //Variables.
-    //File variable.
-    int file;
-    //c - temporary char variable. str & cur - pointers to strings.
-    char c,*str,*cur;
-    //Temporary variable to store string size.
-    ssize_t size;
-
-    //Opening file "input.txt".
-    if((file=open("input.txt",O_RDONLY))<0){
-    	    printf("%s\n","Can't open file!");
-            exit(-1);
-    }
-
-    //Creating dynamic string to store entered commands.
-    str=malloc(MaxStringSize);
-    cur=str;
-	size=1;
-    //This while reads string and loads USELESS function.
-    while (size!=0){
-        //Reading one symbool from file.
-        size=read(file,&c,1);
-	    if((c == NextLine)||(size==0)){ 	    
-		  *cur=0;
-		  if(strlen(str)>0){ 
-		      useless(str);
-          }
-          cur=str;
-	    }
-	    else{
-		  *cur=c;
-          //Asking for next symbol.
-		  cur++;
-	    }
-	}    
-    //Detecting if file is closed now.
-    if(close(file)<0){
-        printf("%s\n","Can't close file!");
-	    exit(-1);
-    }
-    //I use this on Mac to wait for terminal to write out log for functions.
-	while(wait(0)!=-1);
+int main(int argc, const char** argv, const char** envp)
+{
+	DIR* dir;
+	struct dirent* curr_file_info;
+	struct stat sb;
+	char* full_path = NULL;//создаем переменную
+	struct passwd  *pw_d;
+	if(argc < 2)//аргументов недостаточно, файл не найден
+	{
+		printf("No arguments supplied\n");
+		return -1;
+	}
+	dir = opendir(argv[1]);
+	if(dir == NULL)
+	{
+		printf("Error - %d\n", errno);
+		return -1;
+	}
+	full_path = realpath(argv[1], NULL);
+	while( ( curr_file_info = readdir(dir) ) != NULL )
+	{
+		printf("--------------------------------------------\n");
+		printf("File path:  %s/%s\n", full_path, curr_file_info->d_name);
+		full_path = realpath(argv[1], NULL);
+                char* tempp = full_path;
+                tempp = strcat(tempp, "/");
+                tempp = strcat(tempp, curr_file_info->d_name);
+		if (stat(tempp, &sb) == -1) {
+        	printf("Statistics couldn't be taken.");
+        	return -1;
+    	}	
+    	printf("File size:                %lld bytes\n", (long long) sb.st_size);
+    	pw_d = getpwuid ( sb.st_uid ); 
+  		printf ( "File owner:               %s \n", pw_d->pw_name); 
+    	printf("Mode:                     %lo (octal)\n", (unsigned long) sb.st_mode);
+    	printf("Last file access:         %s", ctime(&sb.st_atime));
+      printf("Last file modification:   %s", ctime(&sb.st_mtime));
+      printf("File create time:         %s", ctime(&sb.st_ctime));
+	}
+	free(full_path);	
+	closedir(dir);
+	printf("%s %s\n", argv[0], argv[1]);
+	return 0;
 }
